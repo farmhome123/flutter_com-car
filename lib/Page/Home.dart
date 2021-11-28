@@ -2,7 +2,6 @@
 
 import 'dart:async';
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_app_com/Page/DATALOG.dart';
 import 'package:flutter_app_com/Page/Setting.dart';
@@ -35,7 +34,8 @@ class _HomeState extends State<Home> {
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-              image: AssetImage('assets/images/bg.jpg'), fit: BoxFit.cover),
+              image: AssetImage('assets/images/bg-main.jpg'),
+              fit: BoxFit.cover),
         ),
         child: Row(
           children: [
@@ -43,60 +43,69 @@ class _HomeState extends State<Home> {
               width: size / 2,
               child: Column(
                 children: [
-                  Center(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 0),
-                      child: Container(
-                        height: 300,
-                        child: SfRadialGauge(
-                          axes: [
-                            RadialAxis(
-                              minimum: 0,
-                              maximum: 200,
-                              ranges: [
-                                GaugeRange(
-                                  startValue: 0,
-                                  endValue: 50,
-                                  color: Colors.orange[200],
+                  Stack(
+                    children: [
+                      IconButton(
+                        icon: Image.asset('assets/images/logopng.png'),
+                        iconSize: 50,
+                        onPressed: () {},
+                      ),
+                      Center(
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 30),
+                          child: Container(
+                            height: 300,
+                            child: SfRadialGauge(
+                              axes: [
+                                RadialAxis(
+                                  minimum: 0,
+                                  maximum: 200,
+                                  ranges: [
+                                    GaugeRange(
+                                      startValue: 0,
+                                      endValue: 50,
+                                      color: Colors.orange[200],
+                                    ),
+                                    GaugeRange(
+                                      startValue: 50,
+                                      endValue: 100,
+                                      color: Colors.orange[400],
+                                    ),
+                                    GaugeRange(
+                                      startValue: 100,
+                                      endValue: 150,
+                                      color: Colors.orange[600],
+                                    ),
+                                    GaugeRange(
+                                        startValue: 150,
+                                        endValue: 200,
+                                        color: Colors.red),
+                                  ],
+                                  pointers: [
+                                    NeedlePointer(
+                                        value: speed.toDouble(),
+                                        enableAnimation: true,
+                                        needleColor: Colors.pink),
+                                  ],
+                                  annotations: [
+                                    GaugeAnnotation(
+                                        widget: Container(
+                                            child: Text('${speed}',
+                                                style: TextStyle(
+                                                  fontSize: 25,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.orangeAccent,
+                                                ))),
+                                        angle: 90,
+                                        positionFactor: 0.5),
+                                  ],
                                 ),
-                                GaugeRange(
-                                  startValue: 50,
-                                  endValue: 100,
-                                  color: Colors.orange[400],
-                                ),
-                                GaugeRange(
-                                  startValue: 100,
-                                  endValue: 150,
-                                  color: Colors.orange[600],
-                                ),
-                                GaugeRange(
-                                    startValue: 150,
-                                    endValue: 200,
-                                    color: Colors.red),
-                              ],
-                              pointers: [
-                                NeedlePointer(
-                                    value: speed.toDouble(),
-                                    enableAnimation: true,
-                                    needleColor: Colors.pink),
-                              ],
-                              annotations: [
-                                GaugeAnnotation(
-                                    widget: Container(
-                                        child: Text('${speed}',
-                                            style: TextStyle(
-                                              fontSize: 25,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.orangeAccent,
-                                            ))),
-                                    angle: 90,
-                                    positionFactor: 0.5),
                               ],
                             ),
-                          ],
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,

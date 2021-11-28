@@ -42,6 +42,7 @@ class _HomeState extends State<Home> {
             Container(
               width: size / 2,
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Stack(
                     children: [
@@ -54,7 +55,7 @@ class _HomeState extends State<Home> {
                         child: Padding(
                           padding: const EdgeInsets.only(top: 30),
                           child: Container(
-                            height: 300,
+                            height: size * 0.35,
                             child: SfRadialGauge(
                               axes: [
                                 RadialAxis(
@@ -105,15 +106,19 @@ class _HomeState extends State<Home> {
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      IconButton(
-                        icon: Image.asset('assets/images/clear.png'),
-                        iconSize: 50,
-                        onPressed: () {},
+                      Container(
+                        height: MediaQuery.of(context).size.height,
+                        width: size / 2,
+                        child: Align(
+                          alignment: Alignment.bottomLeft,
+                          child: Container(
+                            child: IconButton(
+                              icon: Image.asset('assets/images/clear.png'),
+                              iconSize: 50,
+                              onPressed: () {},
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -142,7 +147,7 @@ class _HomeState extends State<Home> {
                   Center(
                     child: Padding(
                       padding: const EdgeInsets.only(
-                        top: 30,
+                        top: 0,
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -259,63 +264,65 @@ class _HomeState extends State<Home> {
                           color: Colors.orangeAccent),
                     ),
                   ),
-                  Container(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'MODE',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 24,
-                                color: Colors.orangeAccent),
-                          ),
-                          IconButton(
-                            icon: Image.asset('assets/images/batt.png'),
-                            iconSize: 50,
-                            onPressed: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => SettingPage()));
-                            },
-                          ),
-                          IconButton(
-                            icon: Image.asset('assets/images/frp.png'),
-                            iconSize: 50,
-                            onPressed: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => SettingPage()));
-                            },
-                          ),
-                          IconButton(
-                            icon: Image.asset('assets/images/vfrp.png'),
-                            iconSize: 50,
-                            onPressed: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => SettingPage()));
-                            },
-                          ),
-                          IconButton(
-                            icon:
-                                Image.asset('assets/images/setting-logo3.png'),
-                            iconSize: 50,
-                            onPressed: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => SettingPage()));
-                            },
-                          ),
-                        ],
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 10),
+                        child: Row(
+                          children: [
+                            Text(
+                              'MODE',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 24,
+                                  color: Colors.orangeAccent),
+                            ),
+                            IconButton(
+                              icon: Image.asset('assets/images/batt.png'),
+                              iconSize: 50,
+                              onPressed: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => SettingPage()));
+                              },
+                            ),
+                            IconButton(
+                              icon: Image.asset('assets/images/frp.png'),
+                              iconSize: 50,
+                              onPressed: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => SettingPage()));
+                              },
+                            ),
+                            IconButton(
+                              icon: Image.asset('assets/images/vfrp.png'),
+                              iconSize: 50,
+                              onPressed: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => SettingPage()));
+                              },
+                            ),
+                            IconButton(
+                              icon: Image.asset(
+                                  'assets/images/setting-logo3.png'),
+                              iconSize: 50,
+                              onPressed: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => SettingPage()));
+                              },
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ],
               ),

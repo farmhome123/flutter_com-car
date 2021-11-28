@@ -1,5 +1,4 @@
-// ignore_for_file: file_names
-
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -56,8 +55,8 @@ class _DATALOGState extends State<DATALOG> {
             Row(
               children: [
                 Container(
-                  height: 250,
-                  width: 250,
+                  height: 230,
+                  width: 200,
                   child: Column(
                     children: [
                       TextButton(
@@ -88,7 +87,7 @@ class _DATALOGState extends State<DATALOG> {
                   ),
                 ),
                 Container(
-                  height: 250,
+                  height: 240,
                   width: 500,
                   color: Colors.white12,
                   child: SfCartesianChart(
@@ -174,15 +173,21 @@ class _DATALOGState extends State<DATALOG> {
     Random random = new Random();
     double day;
     double sales;
+    int i = 0;
     final List<SalesData> chartData = [];
-    for (var i = 0; i < 50; i++) {
-      day = random.nextInt(30).toDouble();
+    bool isStopped = false;
+    Timer.periodic(new Duration(seconds: 2), (timer) {
+      if (i == 50) {
+        timer.cancel();
+      }
+      print('i = ${i}');
       sales = random.nextInt(100).toDouble();
-      // print('day = ${day}');
-      // print('sales = ${sales}');
-      chartData.insert(i, SalesData(i.toDouble(), sales));
-      // chartData = [SalesData(i.toDouble(), sales)];
-    }
+      day = random.nextInt(30).toDouble();
+      setState(() {
+        chartData.insert(i, SalesData(i.toDouble(), sales));
+      });
+      i = i + 1;
+    });
     return chartData;
   }
 }

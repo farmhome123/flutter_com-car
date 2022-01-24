@@ -1,14 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_app_com/Page/Home.dart';
+import 'package:flutter_app_com/bluetooth/valueProvider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations(
           [DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight])
       .then((_) {
-    runApp(new MyApp());
+    runApp(
+      MultiProvider(providers: [
+        ChangeNotifierProvider<valueProvider>(
+          create: (_) => valueProvider(),
+        ),
+      ], child: MyApp()),
+    );
   });
 }
 
@@ -32,7 +40,10 @@ class MyApp extends StatelessWidget {
               .primaryTextTheme, // ถ้าไม่ใส่ มันจะตั้งค่า Default ทุกอย่างตาม ThemeData.light().textTheme
         ),
       ),
-      home: Home(),
+      home: Home(
+        characteristicRX: null,
+        characteristicTX: null,
+      ),
     );
   }
 }

@@ -1,11 +1,20 @@
 import 'dart:async';
-import 'dart:math';
-
+import 'dart:math' as math;
+import 'dart:convert' show utf8;
 import 'package:flutter/material.dart';
+import 'package:flutter_app_com/bluetooth/valueProvider.dart';
+import 'package:flutter_blue/flutter_blue.dart';
+import 'package:provider/src/provider.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 class DATALOG extends StatefulWidget {
-  const DATALOG({Key? key}) : super(key: key);
+  final BluetoothCharacteristic? characteristicTX;
+  final BluetoothCharacteristic? characteristicRX;
+  const DATALOG(
+      {Key? key,
+      required this.characteristicTX,
+      required this.characteristicRX})
+      : super(key: key);
 
   @override
   _DATALOGState createState() => _DATALOGState();
@@ -15,12 +24,36 @@ class _DATALOGState extends State<DATALOG> {
   TooltipBehavior? _tooltipBehavior;
   ZoomPanBehavior? _zoomPanBehavior;
 
-  late List<SalesData> _chartData;
+  late int count;
+  Timer? timer;
+  bool? isrunning;
+  bool showFRT = true;
+  bool showVFRP = true;
+  bool showSPEED = true;
+  int valueFRT = 0;
+  int valueVFRP = 0;
+  List<_ChartData>? chartData;
+  ChartSeriesController? _chartSeriesController;
+  double _minY = 0;
+  double _maxY = 250;
+  double speed = 0;
   @override
   void initState() {
-    _chartData = getChartData();
-    _tooltipBehavior = TooltipBehavior(enable: true);
-    _zoomPanBehavior = ZoomPanBehavior(enablePanning: true);
+    _tooltipBehavior =
+        TooltipBehavior(enable: true, activationMode: ActivationMode.singleTap);
+    setState(() {
+      isrunning = false;
+    });
+    count = 0;
+    chartData = <_ChartData>[
+      _ChartData(0, 0, 0),
+    ];
+
+    // timer =
+    //     Timer.periodic(const Duration(milliseconds: 100), _updateDataSource);
+    getdataBle();
+    // timer =
+    //     Timer.periodic(const Duration(milliseconds: 100), _updateDataSource);
     super.initState();
   }
 
@@ -46,78 +79,86 @@ class _DATALOGState extends State<DATALOG> {
                     style: TextStyle(color: Colors.amber, fontSize: 30),
                   ),
                   Text(
-                    '13.71  V',
+                    '${context.watch<valueProvider>().battery}  V',
                     style: TextStyle(color: Colors.amber, fontSize: 30),
                   ),
                 ],
               ),
             ),
             Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(
-                  height: 230,
-                  width: 200,
-                  child: Column(
-                    children: [
-                      TextButton(
-                          onPressed: () {},
-                          child: Text(
-                            'EN/DIS',
-                            style: TextStyle(fontSize: 20),
-                          )),
-                      TextButton(
-                          onPressed: () {},
-                          child: Text(
-                            'FRP',
-                            style: TextStyle(fontSize: 20),
-                          )),
-                      TextButton(
-                          onPressed: () {},
-                          child: Text(
-                            'VFRP',
-                            style: TextStyle(fontSize: 20),
-                          )),
-                      TextButton(
-                          onPressed: () {},
-                          child: Text(
-                            'SPEED',
-                            style: TextStyle(fontSize: 20),
-                          )),
-                    ],
+                // Container(
+                //   height: 230,
+                //   width: 200,
+                //   child: Column(
+                //     children: [
+                //       TextButton(
+                //           onPressed: () {},
+                //           child: Text(
+                //             'EN/DIS ${isrunning}',
+                //             style: TextStyle(
+                //                 fontSize: 20,
+                //                 color: isrunning == true
+                //                     ? Colors.red
+                //                     : Colors.yellow),
+                //           )),
+                //       TextButton(
+                //           onPressed: () {
+                //             setState(() {
+                //               showFRT = !showFRT;
+                //             });
+                //           },
+                //           child: const Text(
+                //             'FRP',
+                //             style: TextStyle(fontSize: 20),
+                //           )),
+                //       TextButton(
+                //           onPressed: () {
+                //             setState(() {
+                //               showVFRP = !showVFRP;
+                //             });
+                //           },
+                //           child: const Text(
+                //             'VFRP',
+                //             style: TextStyle(fontSize: 20),
+                //           )),
+                //       TextButton(
+                //           onPressed: () {
+                //             setState(() {
+                //               showSPEED = !showSPEED;
+                //             });
+                //           },
+                //           child: Text(
+                //             'SPEED',
+                //             style: TextStyle(fontSize: 20),
+                //           )),
+                //     ],
+                //   ),
+                // ),
+                Center(
+                  child: Container(
+                    height: 240,
+                    width: 500,
+                    color: Colors.grey,
+                    // child: SfCartesianChart(
+                    //   plotAreaBorderWidth: 0,
+                    //   primaryXAxis: NumericAxis(
+                    //     majorGridLines: const MajorGridLines(width: 0),
+                    //     autoScrollingDelta: 50,
+                    //   ),
+                    //   primaryYAxis: NumericAxis(
+                    //       axisLine: const AxisLine(width: 0),
+                    //       majorTickLines: const MajorTickLines(size: 0)),
+                    //   zoomPanBehavior: ZoomPanBehavior(
+                    //       enablePinching: true,
+                    //       zoomMode: ZoomMode.x,
+                    //       enablePanning: true),
+                    //   tooltipBehavior: TooltipBehavior(enable: true),
+                    //   series: _getDefaultLineSeries(),
+                    // ),
+                    child: _buildLiveLineChart(),
                   ),
-                ),
-                Container(
-                  height: 240,
-                  width: 500,
-                  color: Colors.white12,
-                  child: SfCartesianChart(
-                      plotAreaBorderColor: Colors.green,
-                      borderColor: Colors.red,
-                      backgroundColor: Colors.blue[200],
-                      borderWidth: 1,
-                      primaryXAxis: CategoryAxis(),
-                      // Chart title
-                      title: ChartTitle(text: 'Half yearly sales analysis'),
-                      // Enable legend
-                      legend: Legend(isVisible: true),
-                      // Enable tooltip
-                      tooltipBehavior: _tooltipBehavior,
-                      zoomPanBehavior: _zoomPanBehavior,
-                      series: <LineSeries<SalesData, double>>[
-                        LineSeries<SalesData, double>(
-                            name: 'Sales',
-                            dataSource: _chartData,
-                            xValueMapper: (
-                              SalesData sales,
-                              _,
-                            ) =>
-                                sales.year,
-                            yValueMapper: (SalesData sales, _) => sales.sales,
-                            // Enable data label
-                            dataLabelSettings:
-                                DataLabelSettings(isVisible: true),
-                            enableTooltip: true),
-                      ]),
                 ),
               ],
             ),
@@ -130,21 +171,68 @@ class _DATALOGState extends State<DATALOG> {
                       icon:
                           Image.asset('assets/images/datalog-page/bt-play.png'),
                       iconSize: 50,
-                      onPressed: () {},
+                      onPressed: () {
+                        setState(() {
+                          isrunning = true;
+                          print(
+                              'is ======= > Play ===== isrunning ==== ${isrunning}');
+                          // getdataBle();
+                        });
+                      },
                     ),
                     IconButton(
                       icon:
                           Image.asset('assets/images/datalog-page/bt-stop.png'),
                       iconSize: 50,
-                      onPressed: () {},
+                      onPressed: () {
+                        setState(() {
+                          isrunning = false;
+                          print(
+                              'is ======= > Stop  isrunning ==== ${isrunning}');
+                          // getdataBle();
+                        });
+                      },
                     ),
                     IconButton(
                       icon: Image.asset('assets/images/clear.png'),
                       iconSize: 50,
-                      onPressed: () {},
+                      onPressed: () {
+                        chartData!.clear();
+                        print('is ======= > clear ');
+
+                        setState(() {
+                          isrunning = true;
+                          count = 0;
+                          // chartData = <_ChartData>[
+                          //   _ChartData(0, 0, 0),
+                          // ];
+                        });
+                        // getdataBle();
+                      },
                     ),
                   ],
                 ),
+                // Row(
+                //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //   children: [
+                //     Text(
+                //       ' Frp = ${context.watch<valueProvider>().frp}',
+                //       style: TextStyle(color: Colors.yellow),
+                //     ),
+                //     Text(
+                //       ' showFRT (${showFRT})',
+                //       style: TextStyle(color: Colors.yellow),
+                //     ),
+                //     Text(
+                //       ' showVFRP (${showVFRP})',
+                //       style: TextStyle(color: Colors.yellow),
+                //     ),
+                //     Text(
+                //       ' showSPEED (${showSPEED})',
+                //       style: TextStyle(color: Colors.yellow),
+                //     ),
+                //   ],
+                // ),
                 Row(
                   children: [
                     Padding(
@@ -159,6 +247,10 @@ class _DATALOGState extends State<DATALOG> {
                                 fontSize: 24, fontWeight: FontWeight.bold),
                           )),
                     ),
+                    Text(
+                      'SPEED === > ${speed}',
+                      style: TextStyle(color: Colors.pink),
+                    )
                   ],
                 ),
               ],
@@ -169,31 +261,131 @@ class _DATALOGState extends State<DATALOG> {
     ));
   }
 
-  List<SalesData> getChartData() {
-    Random random = new Random();
-    double day;
-    double sales;
-    int i = 0;
-    final List<SalesData> chartData = [];
-    bool isStopped = false;
-    Timer.periodic(new Duration(seconds: 2), (timer) {
-      if (i == 50) {
-        timer.cancel();
-      }
-      print('i = ${i}');
-      sales = random.nextInt(100).toDouble();
-      day = random.nextInt(30).toDouble();
-      setState(() {
-        chartData.insert(i, SalesData(i.toDouble(), sales));
+  String _dataParser(List<int> dataFromDevice) {
+    return utf8.decode(dataFromDevice);
+  }
+
+  void getdataBle() {
+    if (widget.characteristicTX != null) {
+      widget.characteristicTX!.value.listen((data) {
+        var provider = Provider.of<valueProvider>(context, listen: false);
+        setState(() {
+          speed = provider.speed;
+        });
+        final command = _dataParser(data).toString();
+        print('data  ========= > ${command}');
+        if (command.contains('frp1=')) {
+          final start = 'frp1=';
+          final end = '#';
+          final startIndex = command.indexOf(start);
+          final endIndex = command.indexOf(end);
+          final resultfrp1 =
+              command.substring(startIndex + start.length, endIndex).trim();
+          // context.read<valueProvider>().frp = double.parse(result);
+          valueFRT = int.parse(resultfrp1);
+          setState(() {});
+          print('Data ------------> frp = ${valueFRT}');
+          // setState(() {
+          //   valueBle = resultfrp1;
+          // });
+          // _getChartData(result);
+          // _updateDataSource(resultfrp1);
+          if (isrunning == true) {
+            if (resultfrp1 != null && count != 1000) {
+              _updateDataSource();
+              setState(() {});
+            }
+          }
+        }
       });
-      i = i + 1;
-    });
-    return chartData;
+    }
+  }
+
+  /// Returns the realtime Cartesian line chart.
+  SfCartesianChart _buildLiveLineChart() {
+    return SfCartesianChart(
+        legend: Legend(overflowMode: LegendItemOverflowMode.wrap),
+        plotAreaBorderWidth: 0,
+        primaryXAxis: NumericAxis(
+          majorGridLines: const MajorGridLines(width: 0),
+          autoScrollingDelta: 50,
+          interval: 10,
+          minimum: 0,
+        ),
+        primaryYAxis: NumericAxis(
+            minimum: _minY,
+            maximum: _maxY,
+            interval: 50,
+            axisLine: const AxisLine(width: 0),
+            majorTickLines: const MajorTickLines(size: 0)),
+        zoomPanBehavior: ZoomPanBehavior(
+            enablePinching: true, zoomMode: ZoomMode.x, enablePanning: true),
+        tooltipBehavior: _tooltipBehavior,
+        series: <LineSeries<_ChartData, int>>[
+          LineSeries<_ChartData, int>(
+              onRendererCreated: (ChartSeriesController controller) {
+                _chartSeriesController = controller;
+              },
+              name: 'FRT',
+              dataSource: chartData!,
+              color: Colors.greenAccent,
+              xValueMapper: (_ChartData sales, _) => sales.x,
+              yValueMapper: (_ChartData sales, _) => sales.y,
+              animationDuration: 0,
+              markerSettings: const MarkerSettings(isVisible: true)),
+          LineSeries<_ChartData, int>(
+              onRendererCreated: (ChartSeriesController controller) {
+                _chartSeriesController = controller;
+              },
+              name: 'SPEED',
+              dataSource: chartData!,
+              color: Colors.red,
+              xValueMapper: (_ChartData sales, _) => sales.x,
+              yValueMapper: (_ChartData sales, _) => sales.y2,
+              animationDuration: 0,
+              markerSettings: const MarkerSettings(isVisible: true))
+        ]);
+  }
+
+  ///Continously updating the data source based on timer
+  void _updateDataSource() {
+    if (isrunning == true) {
+      chartData!.add(_ChartData(count, valueFRT, (speed * 3.5).toInt()));
+      // // chartData!.removeAt(0);
+      // if (chartData!.length == 1) {
+      //   chartData!.removeAt(0);
+      //   _chartSeriesController?.updateDataSource(
+      //     addedDataIndexes: <int>[chartData!.length - 1],
+      //     removedDataIndexes: <int>[0],
+      //   );
+      // } else {
+      //   _chartSeriesController?.updateDataSource(
+      //     addedDataIndexes: <int>[chartData!.length - 1],
+      //   );
+      // }
+
+      count = count + 1;
+    }
+  }
+
+  ///Get the random data
+  int _getRandomInt(int min, int max) {
+    final math.Random _random = math.Random();
+    return min + _random.nextInt(max - min);
+  }
+
+  @override
+  void dispose() {
+    chartData!.clear();
+    _chartSeriesController = null;
+    
+    super.dispose();
   }
 }
 
-class SalesData {
-  SalesData(this.year, this.sales);
-  final double year;
-  final double sales;
+class _ChartData {
+  _ChartData(this.x, this.y, this.y2);
+  final int x;
+  final int y;
+  final int y2;
 }

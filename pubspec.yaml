@@ -36,6 +36,9 @@ dependencies:
   syncfusion_flutter_gauges: ^19.3.55
   google_fonts: ^2.1.0
   syncfusion_flutter_charts: ^19.3.55
+  flutter_blue: ^0.8.0
+  provider: ^6.0.2
+  geolocator: ^8.0.1
 
 dev_dependencies:
   flutter_test:

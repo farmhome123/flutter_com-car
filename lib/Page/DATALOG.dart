@@ -378,7 +378,6 @@ class _DATALOGState extends State<DATALOG> {
   void dispose() {
     chartData!.clear();
     _chartSeriesController = null;
-    
     super.dispose();
   }
 }
